@@ -1,0 +1,48 @@
+#
+# Copyright 2021 ABSA Group Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+name: Run Tests
+
+on:
+  workflow_call:
+    inputs:
+      jave_version:
+        description: 'Java version to be used by setup-scala action'
+        default: 'adopt@1.8'
+        required: false
+        type: string
+      scala_version:
+        description: 'Java version to be used by sbt'
+        required: true
+        type: string
+      spark_version:
+        description: 'Java version to be used by sbt'
+        required: true
+        type: string
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Test Spark ${{ inputs.spark_version }} on Scala ${{ inputs.scala_version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - uses: coursier/cache-action@v5
+      - name: Setup Scala
+        uses: olafurpg/setup-scala@v10
+        with:
+          java-version: ${{ inputs.jave_version }}
+      - name: Build and run tests
+        run: sbt ++${{ inputs.scala_version }} test -DSPARK_VERSION=${{ inputs.spark_version }}
